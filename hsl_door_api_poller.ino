@@ -2,124 +2,133 @@
 #include <ESP8266HTTPClient.h>
 #include <WiFiClientSecure.h>
 #include <ArduinoJson.h>
-#include "wifi_config.h" // Include your configuration file
+#include "wifi_config.h" // Include your WiFi credentials
+
+// Polling delay (5 minutes)
+const unsigned long pollingDelay = 300000;
 
 // API endpoint
 const char* apiEndpoint = "https://members.heatsynclabs.org/space_api.json";
 
-// Certificate fingerprint
-const char* fingerprint = "E6:83:40:BA:54:E9:77:E0:BF:D5:6B:18:B4:FC:0F:39:FF:B1:93:ED";
-
 // Define LED pin
 const int ledPin = LED_BUILTIN;
 
-// Variables for pulsating LED
-bool isOpen = false; // Store API result
-unsigned long lastPulseTime = 0; // Track time for pulsating effect
+// Variables
+bool isOpen = false;        // Current state from API
+bool lastState = false;     // Last state to detect changes
+unsigned long lastApiCall = 0;
 
+// Debug function to print WiFi status
+void printWifiStatus() {
+  Serial.println("--- WiFi Status ---");
+  Serial.print("SSID: "); Serial.println(WiFi.SSID());
+  Serial.print("IP: "); Serial.println(WiFi.localIP());
+  Serial.print("RSSI: "); Serial.print(WiFi.RSSI()); Serial.println(" dBm");
+  Serial.print("Status: "); Serial.println(WiFi.status());
+  Serial.println("------------------");
+}
+
+// Return formatted time since boot
 String getFormattedTime() {
   unsigned long currentMillis = millis();
   unsigned long seconds = (currentMillis / 1000) % 60;
   unsigned long minutes = (currentMillis / (1000 * 60)) % 60;
   unsigned long hours = (currentMillis / (1000 * 60 * 60)) % 24;
-
   char buffer[10];
   sprintf(buffer, "%02lu:%02lu:%02lu", hours, minutes, seconds);
   return String(buffer);
 }
 
+// Make the HTTPS API call
 void makeApiCall() {
-  if (WiFi.status() == WL_CONNECTED) {
-    WiFiClientSecure client;
-    HTTPClient http;
-
-    // Set fingerprint for secure connection
-    client.setFingerprint(fingerprint);
-
-    // Start the HTTP GET request
-    http.begin(client, apiEndpoint);
-
-    int httpCode = http.GET();
-
-    if (httpCode > 0) {
-      Serial.printf("HTTP GET code: %d\n", httpCode);
-
-      if (httpCode == HTTP_CODE_OK) {
-        String payload = http.getString();
-        Serial.print("[");
-        Serial.print(getFormattedTime());
-        Serial.print("] ");
-        Serial.println("Response payload:");
-        Serial.println(payload);
-
-        // Parse JSON response
-        DynamicJsonDocument doc(1024);
-        DeserializationError error = deserializeJson(doc, payload);
-
-        if (!error) {
-          isOpen = doc["open"];
-          Serial.printf("Parsed 'open' value: %s\n", isOpen ? "true" : "false");
-        } else {
-          Serial.print("Failed to parse JSON: ");
-          Serial.println(error.c_str());
-        }
-      }
-    } else {
-      Serial.printf("HTTP GET failed, error: %s\n", http.errorToString(httpCode).c_str());
-    }
-
-    http.end();
-  } else {
-    Serial.println("WiFi not connected!");
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.println("[API] WiFi not connected!");
+    printWifiStatus();
+    return;
   }
+
+  WiFiClientSecure client;
+  client.setInsecure();  // Temporary: ignores certificate (can be replaced with CA later)
+
+  HTTPClient http;
+
+  Serial.println("[API] Starting HTTPS request...");
+  if (!http.begin(client, apiEndpoint)) {
+    Serial.println("[API] http.begin() failed!");
+    return;
+  }
+
+  int httpCode = http.GET();
+  Serial.printf("[API] HTTP GET returned: %d (%s)\n", httpCode, http.errorToString(httpCode).c_str());
+
+  if (httpCode == HTTP_CODE_OK) {
+    String payload = http.getString();
+    Serial.println("[API] Response payload:");
+    Serial.println(payload);
+
+    // Parse JSON
+    DynamicJsonDocument doc(1024);
+    DeserializationError error = deserializeJson(doc, payload);
+    if (!error) {
+      isOpen = doc["open"];
+      Serial.printf("[API] Parsed 'open' value: %s\n", isOpen ? "true" : "false");
+    } else {
+      Serial.print("[API] Failed to parse JSON: ");
+      Serial.println(error.c_str());
+    }
+  }
+
+  http.end();
 }
 
 void setup() {
-  // Initialize serial communication
   Serial.begin(115200);
   delay(10);
 
-  // Initialize LED pin
   pinMode(ledPin, OUTPUT);
-  digitalWrite(ledPin, HIGH); // Ensure LED is off initially (inverted logic)
+  digitalWrite(ledPin, HIGH); // LED off initially (inverted logic)
 
-  // Connect to WiFi
+  // WiFi setup
   Serial.println("\nConnecting to WiFi...");
   WiFi.begin(ssid, password);
-
   while (WiFi.status() != WL_CONNECTED) {
-    delay(1000);
+    delay(500);
     Serial.print(".");
   }
-
   Serial.println("\nWiFi connected.");
-  Serial.print("IP address: ");
-  Serial.println(WiFi.localIP());
+  printWifiStatus();
 
-  // Make the first API call immediately
+  // First API call
   makeApiCall();
+  lastState = isOpen; // Initialize lastState
 }
 
 void loop() {
-  static unsigned long lastApiCall = 0;
-
-  // Check and make periodic API calls every 5 minutes
-  if (millis() - lastApiCall >= 300000 || lastApiCall == 0) {
+  // Periodic API call
+  if (millis() - lastApiCall >= pollingDelay || lastApiCall == 0) {
     makeApiCall();
     lastApiCall = millis();
   }
 
-  // LED behavior based on "open" value
-  if (isOpen) {
-      // Fast pulsating effect (LED fades in and out)
-      unsigned long currentMillis = millis();
-      int brightness = abs((int)(512 - (currentMillis % 1024))); // Explicit cast to int
-      analogWrite(ledPin, brightness / 2); // Scale down brightness for inverted logic
-  } else {
-      digitalWrite(ledPin, HIGH); // Turn LED off
+  // LED + Serial output on state change
+  if (isOpen != lastState) {
+    lastState = isOpen;
+    if (isOpen) {
+      Serial.println("HSL Doors Open");
+    } else {
+      Serial.println("HSL Doors Closed");
+    }
   }
 
-  delay(10); // Small delay to allow smooth pulsing
+  // LED behavior
+  if (isOpen) {
+    // Fast pulsating effect
+    unsigned long currentMillis = millis();
+    int brightness = abs((int)(512 - (currentMillis % 1024)));
+    analogWrite(ledPin, brightness / 2); // scale down for inverted logic
+  } else {
+    digitalWrite(ledPin, HIGH); // LED off
+  }
+
+  delay(10); // smooth pulsing
 }
-
-
