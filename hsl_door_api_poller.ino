@@ -5,12 +5,12 @@
 #include "wifi_config.h" // Include your WiFi credentials
 
 // Polling delay (5 minutes)
-const unsigned long pollingDelay = 300000;
+const unsigned long pollingDelay = 300000; // milliseconds
 
 // API endpoint
 const char* apiEndpoint = "https://members.heatsynclabs.org/space_api.json";
 
-// Define LED pin
+// LED pin
 const int ledPin = LED_BUILTIN;
 
 // Variables
@@ -48,7 +48,7 @@ void makeApiCall() {
   }
 
   WiFiClientSecure client;
-  client.setInsecure();  // Temporary: ignores certificate (can be replaced with CA later)
+  client.setInsecure();  // Temporary: ignores certificate
 
   HTTPClient http;
 
@@ -101,6 +101,10 @@ void setup() {
   // First API call
   makeApiCall();
   lastState = isOpen; // Initialize lastState
+
+  // Initial message
+  unsigned long secondsUntilNext = (pollingDelay - (millis() - lastApiCall)) / 1000;
+  Serial.printf("Door %s. Checking again in %lu seconds\n", isOpen ? "Open" : "Closed", secondsUntilNext);
 }
 
 void loop() {
@@ -108,16 +112,9 @@ void loop() {
   if (millis() - lastApiCall >= pollingDelay || lastApiCall == 0) {
     makeApiCall();
     lastApiCall = millis();
-  }
 
-  // LED + Serial output on state change
-  if (isOpen != lastState) {
-    lastState = isOpen;
-    if (isOpen) {
-      Serial.println("HSL Doors Open");
-    } else {
-      Serial.println("HSL Doors Closed");
-    }
+    unsigned long secondsUntilNext = pollingDelay / 1000;
+    Serial.printf("Door %s. Checking again in %lu seconds\n", isOpen ? "Open" : "Closed", secondsUntilNext);
   }
 
   // LED behavior
