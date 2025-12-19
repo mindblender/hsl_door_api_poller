@@ -37,12 +37,9 @@ String getFormattedTime() {
   return String(buffer);
 }
 
-// Update the display with door status
-void updateDisplay() {
+// Update the full display with door status (call only when status changes)
+void updateStatusDisplay() {
   M5.Lcd.fillScreen(BLACK);
-  M5.Lcd.setCursor(0, 0);
-  M5.Lcd.setTextColor(WHITE);
-  M5.Lcd.setTextSize(1);
 
   if (isOpen) {
     // Display "OPEN" in large green text
@@ -57,6 +54,15 @@ void updateDisplay() {
     M5.Lcd.setCursor(5, 30);
     M5.Lcd.println("CLOSED");
   }
+
+  // Initial countdown display
+  updateCountdown();
+}
+
+// Update only the countdown timer (no flicker)
+void updateCountdown() {
+  // Clear only the countdown area (bottom portion of screen)
+  M5.Lcd.fillRect(0, 70, 160, 10, BLACK);
 
   // Show time until next check at bottom
   unsigned long secondsUntilNext = (pollingDelay - (millis() - lastApiCall)) / 1000;
@@ -146,7 +152,7 @@ void setup() {
   lastApiCall = millis();
 
   // Update display
-  updateDisplay();
+  updateStatusDisplay();
 
   // Initial message
   unsigned long secondsUntilNext = (pollingDelay - (millis() - lastApiCall)) / 1000;
@@ -164,14 +170,19 @@ void loop() {
     unsigned long secondsUntilNext = pollingDelay / 1000;
     Serial.printf("Door %s. Checking again in %lu seconds\n", isOpen ? "Open" : "Closed", secondsUntilNext);
 
-    // Update display after API call
-    updateDisplay();
+    // Check if status changed
+    if (isOpen != lastState) {
+      lastState = isOpen;
+      updateStatusDisplay(); // Full screen update only if status changed
+    } else {
+      updateCountdown(); // Just update countdown if status same
+    }
   }
 
-  // Update display countdown every second
+  // Update countdown every second (no flicker)
   static unsigned long lastDisplayUpdate = 0;
   if (millis() - lastDisplayUpdate >= 1000) {
-    updateDisplay();
+    updateCountdown();
     lastDisplayUpdate = millis();
   }
 
@@ -185,7 +196,12 @@ void loop() {
     M5.Lcd.println("Updating...");
     makeApiCall();
     lastApiCall = millis();
-    updateDisplay();
+
+    // Check if status changed
+    if (isOpen != lastState) {
+      lastState = isOpen;
+    }
+    updateStatusDisplay(); // Full update after manual refresh
   }
 
   delay(50);
