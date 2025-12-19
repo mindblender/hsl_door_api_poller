@@ -1,30 +1,33 @@
 # HSL Door API Poller
 
-ESP8266-based door status monitor for HeatSync Labs. Polls the space API to check if the door is open or closed, and provides visual feedback via the built-in LED.
+M5StickC-based door status monitor for HeatSync Labs. Polls the space API to check if the door is open or closed, and displays the status on the LCD screen.
 
 ## Features
 
 - Polls the HeatSync Labs Space API every 5 minutes
-- Visual LED indicator:
-  - **Pulsating LED**: Door is open
-  - **LED off**: Door is closed
+- Large, easy-to-read LCD display:
+  - **"OPEN"** in large green text when door is open
+  - **"CLOSED"** in red text when door is closed
+  - Countdown timer showing seconds until next check
+- Manual refresh by pressing the front button (Button A)
 - Serial output with detailed debugging information
 - WiFi connectivity status monitoring
 - Automatic reconnection handling
 
 ## Hardware Requirements
 
-- ESP8266 board (NodeMCU, Wemos D1 Mini, etc.)
-- USB cable for programming and power
-- WiFi network connection
+- M5StickC (ESP32-based device with built-in LCD)
+- USB-C cable for programming and power
+- WiFi network connection (2.4GHz)
 
 ## Software Requirements
 
 - [Arduino IDE](https://www.arduino.cc/en/software) (version 1.8.x or 2.x)
-- ESP8266 board support package
+- ESP32 board support package
 - Required libraries:
-  - ESP8266WiFi (included with ESP8266 board package)
-  - ESP8266HTTPClient (included with ESP8266 board package)
+  - M5StickC (install via Library Manager)
+  - WiFi (included with ESP32 board package)
+  - HTTPClient (included with ESP32 board package)
   - ArduinoJson (install via Library Manager)
 
 ## Installation
@@ -33,24 +36,25 @@ ESP8266-based door status monitor for HeatSync Labs. Polls the space API to chec
 
 Download and install the Arduino IDE from [arduino.cc](https://www.arduino.cc/en/software).
 
-### 2. Add ESP8266 Board Support
+### 2. Add ESP32 Board Support
 
 1. Open Arduino IDE
 2. Go to **File > Preferences**
 3. In "Additional Boards Manager URLs", add:
    ```
-   http://arduino.esp8266.com/stable/package_esp8266com_index.json
+   https://dl.espressif.com/dl/package_esp32_index.json
    ```
 4. Click **OK**
 5. Go to **Tools > Board > Boards Manager**
-6. Search for "esp8266"
-7. Install **esp8266 by ESP8266 Community**
+6. Search for "esp32"
+7. Install **esp32 by Espressif Systems**
 
 ### 3. Install Required Libraries
 
 1. Go to **Sketch > Include Library > Manage Libraries**
-2. Search for "ArduinoJson"
-3. Install **ArduinoJson by Benoit Blanchon** (version 6.x recommended)
+2. Search for and install these libraries:
+   - **M5StickC by M5Stack** (for M5StickC support)
+   - **ArduinoJson by Benoit Blanchon** (version 6.x recommended)
 
 ### 4. Configure WiFi Credentials
 
@@ -67,13 +71,14 @@ Download and install the Arduino IDE from [arduino.cc](https://www.arduino.cc/en
 
 **Note:** `wifi_config.h` is in `.gitignore` to prevent accidentally committing your WiFi credentials.
 
-### 5. Upload to ESP8266
+### 5. Upload to M5StickC
 
-1. Connect your ESP8266 board via USB
-2. In Arduino IDE, go to **Tools > Board** and select your ESP8266 board (e.g., "NodeMCU 1.0")
-3. Go to **Tools > Port** and select the COM/serial port for your board
+1. Connect your M5StickC via USB-C cable
+2. In Arduino IDE, go to **Tools > Board > ESP32 Arduino** and select **M5Stick-C**
+3. Go to **Tools > Port** and select the COM/serial port for your M5StickC
 4. Click the **Upload** button (right arrow icon)
 5. Wait for the upload to complete
+6. The M5StickC display will show "Connecting to WiFi..." during connection
 
 ## Usage
 
@@ -100,10 +105,17 @@ Download and install the Arduino IDE from [arduino.cc](https://www.arduino.cc/en
    Door Open. Checking again in 300 seconds
    ```
 
-### LED Indicators
+### LCD Display
 
-- **Fast pulsating LED**: The door is currently open
-- **LED off**: The door is currently closed
+The M5StickC LCD screen shows:
+- **"OPEN"** in large green text (size 4 font) when the door is open
+- **"CLOSED"** in red text (size 3 font) when the door is closed
+- **Countdown timer** at the bottom showing seconds until next API check
+- **"Updating..."** in yellow when manually refreshing
+
+### Manual Refresh
+
+Press **Button A** (the large button on the front of the M5StickC) to immediately check the door status without waiting for the next scheduled poll.
 
 ### Polling Interval
 
@@ -117,11 +129,12 @@ const unsigned long pollingDelay = 300000; // milliseconds
 
 ### WiFi Connection Issues
 
-If the board cannot connect to WiFi:
+If the M5StickC cannot connect to WiFi:
 - Verify your SSID and password in `wifi_config.h`
-- Ensure your WiFi network is 2.4GHz (ESP8266 doesn't support 5GHz)
-- Check that the ESP8266 is within range of your router
+- Ensure your WiFi network is 2.4GHz (M5StickC doesn't support 5GHz)
+- Check that the M5StickC is within range of your router
 - Look for WiFi status debug information in the Serial Monitor
+- The display will show "Connecting to WiFi..." during connection attempts
 
 ### API Call Failures
 
@@ -133,11 +146,20 @@ If API calls are failing:
 
 ### Upload Issues
 
-If you can't upload to the board:
-- Make sure the correct board and port are selected in **Tools** menu
-- Try pressing the FLASH/BOOT button on the board during upload
-- Install or update USB drivers for your specific ESP8266 board
-- Try a different USB cable (some cables are power-only)
+If you can't upload to the M5StickC:
+- Make sure **M5Stick-C** is selected in **Tools > Board**
+- Verify the correct port is selected in **Tools > Port**
+- Install or update CH9102 or CP210x USB drivers (depending on your M5StickC version)
+- Try a different USB-C cable (some cables are power-only)
+- Make sure the M5StickC is powered on (press the power button on the side if needed)
+
+### Display Issues
+
+If the display isn't showing anything:
+- Press the power button (side button) to turn on the M5StickC
+- Check the battery level (charge via USB-C if needed)
+- Verify the upload completed successfully
+- Check the Serial Monitor for error messages
 
 ## Configuration
 
@@ -149,12 +171,12 @@ To change the API endpoint, modify the `apiEndpoint` constant:
 const char* apiEndpoint = "https://your-api-endpoint.com/api.json";
 ```
 
-### LED Pin
+### Display Rotation
 
-By default, the built-in LED is used. To use a different pin:
+The display is set to rotation 3 (landscape mode) for better readability. To change the orientation, modify the rotation value in setup():
 
 ```cpp
-const int ledPin = D1; // or any other GPIO pin
+M5.Lcd.setRotation(3); // 0-3 for different orientations
 ```
 
 ## License

@@ -1,5 +1,6 @@
-#include <ESP8266WiFi.h>
-#include <ESP8266HTTPClient.h>
+#include <M5StickC.h>
+#include <WiFi.h>
+#include <HTTPClient.h>
 #include <WiFiClientSecure.h>
 #include <ArduinoJson.h>
 #include "wifi_config.h" // Include your WiFi credentials
@@ -9,9 +10,6 @@ const unsigned long pollingDelay = 300000; // milliseconds
 
 // API endpoint
 const char* apiEndpoint = "https://members.heatsynclabs.org/space_api.json";
-
-// LED pin
-const int ledPin = LED_BUILTIN;
 
 // Variables
 bool isOpen = false;        // Current state from API
@@ -37,6 +35,35 @@ String getFormattedTime() {
   char buffer[10];
   sprintf(buffer, "%02lu:%02lu:%02lu", hours, minutes, seconds);
   return String(buffer);
+}
+
+// Update the display with door status
+void updateDisplay() {
+  M5.Lcd.fillScreen(BLACK);
+  M5.Lcd.setCursor(0, 0);
+  M5.Lcd.setTextColor(WHITE);
+  M5.Lcd.setTextSize(1);
+
+  if (isOpen) {
+    // Display "OPEN" in large green text
+    M5.Lcd.setTextColor(GREEN);
+    M5.Lcd.setTextSize(4);
+    M5.Lcd.setCursor(10, 30);
+    M5.Lcd.println("OPEN");
+  } else {
+    // Display "CLOSED" in red text
+    M5.Lcd.setTextColor(RED);
+    M5.Lcd.setTextSize(3);
+    M5.Lcd.setCursor(5, 30);
+    M5.Lcd.println("CLOSED");
+  }
+
+  // Show time until next check at bottom
+  unsigned long secondsUntilNext = (pollingDelay - (millis() - lastApiCall)) / 1000;
+  M5.Lcd.setTextSize(1);
+  M5.Lcd.setTextColor(WHITE);
+  M5.Lcd.setCursor(0, 70);
+  M5.Lcd.printf("Next: %lus", secondsUntilNext);
 }
 
 // Make the HTTPS API call
@@ -82,11 +109,18 @@ void makeApiCall() {
 }
 
 void setup() {
+  // Initialize M5StickC
+  M5.begin();
+  M5.Lcd.setRotation(3); // Rotate display for better readability
+  M5.Lcd.fillScreen(BLACK);
+  M5.Lcd.setTextColor(WHITE);
+  M5.Lcd.setTextSize(2);
+  M5.Lcd.setCursor(0, 20);
+  M5.Lcd.println("Connecting");
+  M5.Lcd.println("to WiFi...");
+
   Serial.begin(115200);
   delay(10);
-
-  pinMode(ledPin, OUTPUT);
-  digitalWrite(ledPin, HIGH); // LED off initially (inverted logic)
 
   // WiFi setup
   Serial.println("\nConnecting to WiFi...");
@@ -98,9 +132,21 @@ void setup() {
   Serial.println("\nWiFi connected.");
   printWifiStatus();
 
+  // Show connected status
+  M5.Lcd.fillScreen(BLACK);
+  M5.Lcd.setCursor(0, 20);
+  M5.Lcd.setTextSize(2);
+  M5.Lcd.println("WiFi");
+  M5.Lcd.println("Connected!");
+  delay(1000);
+
   // First API call
   makeApiCall();
   lastState = isOpen; // Initialize lastState
+  lastApiCall = millis();
+
+  // Update display
+  updateDisplay();
 
   // Initial message
   unsigned long secondsUntilNext = (pollingDelay - (millis() - lastApiCall)) / 1000;
@@ -108,24 +154,39 @@ void setup() {
 }
 
 void loop() {
+  M5.update(); // Update button state
+
   // Periodic API call
-  if (millis() - lastApiCall >= pollingDelay || lastApiCall == 0) {
+  if (millis() - lastApiCall >= pollingDelay) {
     makeApiCall();
     lastApiCall = millis();
 
     unsigned long secondsUntilNext = pollingDelay / 1000;
     Serial.printf("Door %s. Checking again in %lu seconds\n", isOpen ? "Open" : "Closed", secondsUntilNext);
+
+    // Update display after API call
+    updateDisplay();
   }
 
-  // LED behavior
-  if (isOpen) {
-    // Fast pulsating effect
-    unsigned long currentMillis = millis();
-    int brightness = abs((int)(512 - (currentMillis % 1024)));
-    analogWrite(ledPin, brightness / 2); // scale down for inverted logic
-  } else {
-    digitalWrite(ledPin, HIGH); // LED off
+  // Update display countdown every second
+  static unsigned long lastDisplayUpdate = 0;
+  if (millis() - lastDisplayUpdate >= 1000) {
+    updateDisplay();
+    lastDisplayUpdate = millis();
   }
 
-  delay(10); // smooth pulsing
+  // Button A: Manual refresh
+  if (M5.BtnA.wasPressed()) {
+    Serial.println("Button pressed - refreshing status");
+    M5.Lcd.fillScreen(BLACK);
+    M5.Lcd.setCursor(10, 30);
+    M5.Lcd.setTextSize(2);
+    M5.Lcd.setTextColor(YELLOW);
+    M5.Lcd.println("Updating...");
+    makeApiCall();
+    lastApiCall = millis();
+    updateDisplay();
+  }
+
+  delay(50);
 }
