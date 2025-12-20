@@ -63,6 +63,19 @@ void drawTree(int x, int y) {
 
   // Trunk (brown)
   M5.Lcd.fillRect(x+7, y+28, 6, 6, 0x8400);
+
+  // Ornaments (colorful decorations)
+  M5.Lcd.fillRect(x+7, y+6, 2, 2, RED);      // Red ornament - top section
+  M5.Lcd.fillRect(x+11, y+8, 2, 2, BLUE);    // Blue ornament - top section
+
+  M5.Lcd.fillRect(x+7, y+12, 2, 2, MAGENTA); // Magenta ornament - middle
+  M5.Lcd.fillRect(x+11, y+14, 2, 2, CYAN);   // Cyan ornament - middle
+  M5.Lcd.fillRect(x+5, y+16, 2, 2, RED);     // Red ornament - middle
+
+  M5.Lcd.fillRect(x+6, y+20, 2, 2, BLUE);    // Blue ornament - bottom
+  M5.Lcd.fillRect(x+12, y+22, 2, 2, YELLOW); // Yellow ornament - bottom
+  M5.Lcd.fillRect(x+4, y+24, 2, 2, MAGENTA); // Magenta ornament - bottom
+  M5.Lcd.fillRect(x+14, y+26, 2, 2, CYAN);   // Cyan ornament - bottom
 }
 
 // Update the full display with door status
