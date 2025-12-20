@@ -86,15 +86,15 @@ void updateStatusDisplay() {
     // Display "OPEN for HAXMAS" in clean layout
     M5.Lcd.setTextColor(GREEN);
     M5.Lcd.setTextSize(3);
-    M5.Lcd.setCursor(10, 15);
+    M5.Lcd.setCursor(10, 10);
     M5.Lcd.println("OPEN");
 
     M5.Lcd.setTextSize(2);
-    M5.Lcd.setCursor(15, 50);
+    M5.Lcd.setCursor(15, 42);
     M5.Lcd.println("for");
 
     M5.Lcd.setTextSize(2);
-    M5.Lcd.setCursor(5, 70);
+    M5.Lcd.setCursor(5, 60);
     M5.Lcd.println("HAXMAS");
 
     // Draw Christmas tree on the right side
