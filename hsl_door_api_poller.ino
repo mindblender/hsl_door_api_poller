@@ -37,18 +37,28 @@ String getFormattedTime() {
   return String(buffer);
 }
 
-// Update the full display with door status (call only when status changes)
+// Update the full display with door status
 void updateStatusDisplay() {
   M5.Lcd.fillScreen(BLACK);
 
   if (isOpen) {
-    // Display "Open 🎄" in large green text
+    // Left side: "OPEN" and "for HAXMAS."
     M5.Lcd.setTextColor(GREEN);
-    M5.Lcd.setTextSize(4);
-    M5.Lcd.setCursor(0, 30);
-    M5.Lcd.print("Open");
     M5.Lcd.setTextSize(3);
-    M5.Lcd.println(" 🎄");
+    M5.Lcd.setCursor(0, 10);
+    M5.Lcd.println("OPEN");
+
+    M5.Lcd.setTextSize(2);
+    M5.Lcd.setCursor(0, 45);
+    M5.Lcd.println("for");
+    M5.Lcd.setCursor(0, 65);
+    M5.Lcd.println("HAXMAS.");
+
+    // Right side: Large tree spanning both lines
+    M5.Lcd.setTextColor(GREEN);
+    M5.Lcd.setTextSize(6);
+    M5.Lcd.setCursor(110, 20);
+    M5.Lcd.print("🎄");
   } else {
     // Display "CLOSED" in red text
     M5.Lcd.setTextColor(RED);
@@ -56,22 +66,6 @@ void updateStatusDisplay() {
     M5.Lcd.setCursor(5, 30);
     M5.Lcd.println("CLOSED");
   }
-
-  // Initial countdown display
-  updateCountdown();
-}
-
-// Update only the countdown timer (no flicker)
-void updateCountdown() {
-  // Clear only the countdown area (bottom portion of screen)
-  M5.Lcd.fillRect(0, 70, 160, 10, BLACK);
-
-  // Show time until next check at bottom
-  unsigned long secondsUntilNext = (pollingDelay - (millis() - lastApiCall)) / 1000;
-  M5.Lcd.setTextSize(1);
-  M5.Lcd.setTextColor(WHITE);
-  M5.Lcd.setCursor(0, 70);
-  M5.Lcd.printf("Next: %lus", secondsUntilNext);
 }
 
 // Make the HTTPS API call
@@ -175,17 +169,8 @@ void loop() {
     // Check if status changed
     if (isOpen != lastState) {
       lastState = isOpen;
-      updateStatusDisplay(); // Full screen update only if status changed
-    } else {
-      updateCountdown(); // Just update countdown if status same
+      updateStatusDisplay(); // Update display if status changed
     }
-  }
-
-  // Update countdown every second (no flicker)
-  static unsigned long lastDisplayUpdate = 0;
-  if (millis() - lastDisplayUpdate >= 1000) {
-    updateCountdown();
-    lastDisplayUpdate = millis();
   }
 
   // Button A: Manual refresh
