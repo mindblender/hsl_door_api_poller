@@ -37,15 +37,32 @@ String getFormattedTime() {
   return String(buffer);
 }
 
-// Draw a Christmas tree using graphics primitives
+// Draw a pixel-art Christmas tree
 void drawTree(int x, int y) {
-  // Tree foliage (three triangles)
-  M5.Lcd.fillTriangle(x, y, x-15, y+15, x+15, y+15, GREEN);
-  M5.Lcd.fillTriangle(x, y+10, x-12, y+25, x+12, y+25, GREEN);
-  M5.Lcd.fillTriangle(x, y+20, x-10, y+35, x+10, y+35, GREEN);
+  // Star on top (yellow)
+  M5.Lcd.fillRect(x+9, y, 2, 2, YELLOW);
+  M5.Lcd.fillRect(x+8, y+1, 4, 2, YELLOW);
 
-  // Tree trunk
-  M5.Lcd.fillRect(x-3, y+35, 6, 8, 0x8400); // Brown color
+  // Top section of tree (green)
+  M5.Lcd.fillRect(x+7, y+4, 6, 2, GREEN);
+  M5.Lcd.fillRect(x+6, y+6, 8, 2, GREEN);
+  M5.Lcd.fillRect(x+5, y+8, 10, 2, GREEN);
+
+  // Middle section (green)
+  M5.Lcd.fillRect(x+6, y+10, 8, 2, GREEN);
+  M5.Lcd.fillRect(x+5, y+12, 10, 2, GREEN);
+  M5.Lcd.fillRect(x+4, y+14, 12, 2, GREEN);
+  M5.Lcd.fillRect(x+3, y+16, 14, 2, GREEN);
+
+  // Bottom section (green)
+  M5.Lcd.fillRect(x+4, y+18, 12, 2, GREEN);
+  M5.Lcd.fillRect(x+3, y+20, 14, 2, GREEN);
+  M5.Lcd.fillRect(x+2, y+22, 16, 2, GREEN);
+  M5.Lcd.fillRect(x+1, y+24, 18, 2, GREEN);
+  M5.Lcd.fillRect(x, y+26, 20, 2, GREEN);
+
+  // Trunk (brown)
+  M5.Lcd.fillRect(x+7, y+28, 6, 6, 0x8400);
 }
 
 // Update the full display with door status
@@ -68,7 +85,7 @@ void updateStatusDisplay() {
     M5.Lcd.println("HAXMAS");
 
     // Draw Christmas tree on the right side
-    drawTree(145, 20);
+    drawTree(135, 15);
   } else {
     // Display "CLOSED" in red text
     M5.Lcd.setTextColor(RED);
