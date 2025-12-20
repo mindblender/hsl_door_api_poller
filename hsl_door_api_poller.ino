@@ -42,23 +42,19 @@ void updateStatusDisplay() {
   M5.Lcd.fillScreen(BLACK);
 
   if (isOpen) {
-    // Left side: "OPEN" and "for HAXMAS."
+    // Display "OPEN for HAXMAS" in clean layout
     M5.Lcd.setTextColor(GREEN);
     M5.Lcd.setTextSize(3);
-    M5.Lcd.setCursor(0, 10);
+    M5.Lcd.setCursor(10, 15);
     M5.Lcd.println("OPEN");
 
     M5.Lcd.setTextSize(2);
-    M5.Lcd.setCursor(0, 45);
+    M5.Lcd.setCursor(15, 50);
     M5.Lcd.println("for");
-    M5.Lcd.setCursor(0, 65);
-    M5.Lcd.println("HAXMAS.");
 
-    // Right side: Large tree spanning both lines
-    M5.Lcd.setTextColor(GREEN);
-    M5.Lcd.setTextSize(6);
-    M5.Lcd.setCursor(110, 20);
-    M5.Lcd.print("🎄");
+    M5.Lcd.setTextSize(2);
+    M5.Lcd.setCursor(5, 70);
+    M5.Lcd.println("HAXMAS");
   } else {
     // Display "CLOSED" in red text
     M5.Lcd.setTextColor(RED);
