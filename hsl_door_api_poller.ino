@@ -37,6 +37,17 @@ String getFormattedTime() {
   return String(buffer);
 }
 
+// Draw a Christmas tree using graphics primitives
+void drawTree(int x, int y) {
+  // Tree foliage (three triangles)
+  M5.Lcd.fillTriangle(x, y, x-15, y+15, x+15, y+15, GREEN);
+  M5.Lcd.fillTriangle(x, y+10, x-12, y+25, x+12, y+25, GREEN);
+  M5.Lcd.fillTriangle(x, y+20, x-10, y+35, x+10, y+35, GREEN);
+
+  // Tree trunk
+  M5.Lcd.fillRect(x-3, y+35, 6, 8, 0x8400); // Brown color
+}
+
 // Update the full display with door status
 void updateStatusDisplay() {
   M5.Lcd.fillScreen(BLACK);
@@ -55,6 +66,9 @@ void updateStatusDisplay() {
     M5.Lcd.setTextSize(2);
     M5.Lcd.setCursor(5, 70);
     M5.Lcd.println("HAXMAS");
+
+    // Draw Christmas tree on the right side
+    drawTree(145, 20);
   } else {
     // Display "CLOSED" in red text
     M5.Lcd.setTextColor(RED);
