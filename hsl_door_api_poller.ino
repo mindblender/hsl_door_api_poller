@@ -42,11 +42,13 @@ void updateStatusDisplay() {
   M5.Lcd.fillScreen(BLACK);
 
   if (isOpen) {
-    // Display "OPEN" in large green text
+    // Display "Open 🎄" in large green text
     M5.Lcd.setTextColor(GREEN);
     M5.Lcd.setTextSize(4);
-    M5.Lcd.setCursor(10, 30);
-    M5.Lcd.println("OPEN");
+    M5.Lcd.setCursor(0, 30);
+    M5.Lcd.print("Open");
+    M5.Lcd.setTextSize(3);
+    M5.Lcd.println(" 🎄");
   } else {
     // Display "CLOSED" in red text
     M5.Lcd.setTextColor(RED);
