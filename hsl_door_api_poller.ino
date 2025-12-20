@@ -37,64 +37,45 @@ String getFormattedTime() {
   return String(buffer);
 }
 
-// Draw a tall, narrow pixel-art Christmas tree (70 pixels tall, 30 pixels wide)
+// Draw a proportionally scaled Christmas tree (68 pixels tall, 40 pixels wide)
 void drawTree(int x, int y) {
-  // Star on top (yellow) - 3px tall
-  M5.Lcd.fillRect(x+14, y, 3, 2, YELLOW);
-  M5.Lcd.fillRect(x+13, y+2, 5, 2, YELLOW);
+  // Star on top (yellow) - scaled 2x
+  M5.Lcd.fillRect(x+18, y, 4, 4, YELLOW);
+  M5.Lcd.fillRect(x+16, y+2, 8, 4, YELLOW);
 
-  // Top section of tree (green) - 16px tall
-  M5.Lcd.fillRect(x+12, y+5, 7, 2, GREEN);
-  M5.Lcd.fillRect(x+11, y+7, 9, 2, GREEN);
-  M5.Lcd.fillRect(x+10, y+9, 11, 2, GREEN);
-  M5.Lcd.fillRect(x+9, y+11, 13, 2, GREEN);
-  M5.Lcd.fillRect(x+8, y+13, 15, 2, GREEN);
-  M5.Lcd.fillRect(x+7, y+15, 17, 2, GREEN);
-  M5.Lcd.fillRect(x+6, y+17, 19, 2, GREEN);
-  M5.Lcd.fillRect(x+5, y+19, 21, 2, GREEN);
+  // Top section of tree (green) - scaled 2x
+  M5.Lcd.fillRect(x+14, y+8, 12, 4, GREEN);
+  M5.Lcd.fillRect(x+12, y+12, 16, 4, GREEN);
+  M5.Lcd.fillRect(x+10, y+16, 20, 4, GREEN);
 
-  // Middle section (green) - 24px tall
-  M5.Lcd.fillRect(x+8, y+23, 15, 2, GREEN);
-  M5.Lcd.fillRect(x+7, y+25, 17, 2, GREEN);
-  M5.Lcd.fillRect(x+6, y+27, 19, 2, GREEN);
-  M5.Lcd.fillRect(x+5, y+29, 21, 2, GREEN);
-  M5.Lcd.fillRect(x+4, y+31, 23, 2, GREEN);
-  M5.Lcd.fillRect(x+3, y+33, 25, 2, GREEN);
-  M5.Lcd.fillRect(x+2, y+35, 27, 2, GREEN);
-  M5.Lcd.fillRect(x+2, y+37, 27, 2, GREEN);
-  M5.Lcd.fillRect(x+3, y+39, 25, 2, GREEN);
-  M5.Lcd.fillRect(x+4, y+41, 23, 2, GREEN);
-  M5.Lcd.fillRect(x+5, y+43, 21, 2, GREEN);
-  M5.Lcd.fillRect(x+6, y+45, 19, 2, GREEN);
+  // Middle section (green) - scaled 2x
+  M5.Lcd.fillRect(x+12, y+20, 16, 4, GREEN);
+  M5.Lcd.fillRect(x+10, y+24, 20, 4, GREEN);
+  M5.Lcd.fillRect(x+8, y+28, 24, 4, GREEN);
+  M5.Lcd.fillRect(x+6, y+32, 28, 4, GREEN);
 
-  // Bottom section (green) - 20px tall
-  M5.Lcd.fillRect(x+5, y+48, 21, 2, GREEN);
-  M5.Lcd.fillRect(x+4, y+50, 23, 2, GREEN);
-  M5.Lcd.fillRect(x+3, y+52, 25, 2, GREEN);
-  M5.Lcd.fillRect(x+2, y+54, 27, 2, GREEN);
-  M5.Lcd.fillRect(x+1, y+56, 29, 2, GREEN);
-  M5.Lcd.fillRect(x, y+58, 30, 2, GREEN);
-  M5.Lcd.fillRect(x, y+60, 30, 2, GREEN);
-  M5.Lcd.fillRect(x+1, y+62, 29, 2, GREEN);
-  M5.Lcd.fillRect(x+2, y+64, 27, 2, GREEN);
-  M5.Lcd.fillRect(x+3, y+66, 25, 2, GREEN);
+  // Bottom section (green) - scaled 2x
+  M5.Lcd.fillRect(x+8, y+36, 24, 4, GREEN);
+  M5.Lcd.fillRect(x+6, y+40, 28, 4, GREEN);
+  M5.Lcd.fillRect(x+4, y+44, 32, 4, GREEN);
+  M5.Lcd.fillRect(x+2, y+48, 36, 4, GREEN);
+  M5.Lcd.fillRect(x, y+52, 40, 4, GREEN);
 
-  // Trunk (brown) - 8px tall
-  M5.Lcd.fillRect(x+11, y+68, 9, 8, 0x8400);
+  // Trunk (brown) - scaled 2x
+  M5.Lcd.fillRect(x+14, y+56, 12, 12, 0x8400);
 
-  // Ornaments (colorful decorations)
-  M5.Lcd.fillRect(x+10, y+11, 2, 2, RED);     // Red - top
-  M5.Lcd.fillRect(x+17, y+15, 2, 2, BLUE);    // Blue - top
+  // Ornaments (colorful decorations) - scaled 2x
+  M5.Lcd.fillRect(x+14, y+12, 4, 4, RED);      // Red - top
+  M5.Lcd.fillRect(x+22, y+16, 4, 4, BLUE);     // Blue - top
 
-  M5.Lcd.fillRect(x+7, y+27, 2, 2, MAGENTA);  // Magenta - middle
-  M5.Lcd.fillRect(x+19, y+31, 2, 2, CYAN);    // Cyan - middle
-  M5.Lcd.fillRect(x+5, y+37, 2, 2, RED);      // Red - middle
-  M5.Lcd.fillRect(x+22, y+41, 2, 2, YELLOW);  // Yellow - middle
+  M5.Lcd.fillRect(x+14, y+24, 4, 4, MAGENTA);  // Magenta - middle
+  M5.Lcd.fillRect(x+22, y+28, 4, 4, CYAN);     // Cyan - middle
+  M5.Lcd.fillRect(x+10, y+32, 4, 4, RED);      // Red - middle
 
-  M5.Lcd.fillRect(x+6, y+52, 2, 2, BLUE);     // Blue - bottom
-  M5.Lcd.fillRect(x+13, y+56, 2, 2, MAGENTA); // Magenta - bottom
-  M5.Lcd.fillRect(x+20, y+60, 2, 2, CYAN);    // Cyan - bottom
-  M5.Lcd.fillRect(x+10, y+64, 2, 2, YELLOW);  // Yellow - bottom
+  M5.Lcd.fillRect(x+12, y+40, 4, 4, BLUE);     // Blue - bottom
+  M5.Lcd.fillRect(x+24, y+44, 4, 4, YELLOW);   // Yellow - bottom
+  M5.Lcd.fillRect(x+8, y+48, 4, 4, MAGENTA);   // Magenta - bottom
+  M5.Lcd.fillRect(x+28, y+52, 4, 4, CYAN);     // Cyan - bottom
 }
 
 // Update the full display with door status
@@ -116,8 +97,8 @@ void updateStatusDisplay() {
     M5.Lcd.setCursor(5, 60);
     M5.Lcd.println("HAXMAS");
 
-    // Draw tall, narrow Christmas tree on the right side
-    drawTree(127, 3);
+    // Draw proportionally scaled Christmas tree on the right side
+    drawTree(117, 6);
   } else {
     // Display "CLOSED" in red text
     M5.Lcd.setTextColor(RED);
