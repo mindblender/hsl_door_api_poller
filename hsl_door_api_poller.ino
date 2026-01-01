@@ -164,15 +164,63 @@ void setup() {
   Serial.begin(115200);
   delay(10);
 
-  // WiFi setup
-  Serial.println("\nConnecting to WiFi...");
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
+  // WiFi setup - prefer HeatSync Labs WiFi if available
+  Serial.println("\nScanning for WiFi networks...");
+  int networksFound = WiFi.scanNetworks();
+  bool hslFound = false;
+
+  for (int i = 0; i < networksFound; i++) {
+    if (WiFi.SSID(i) == "heatsynclabs") {
+      hslFound = true;
+      Serial.println("HeatSync Labs WiFi found!");
+      break;
+    }
+  }
+
+  const char* connectSSID;
+  const char* connectPassword;
+
+  if (hslFound) {
+    connectSSID = "heatsynclabs";
+    connectPassword = "hacktheplanet";
+    Serial.println("Connecting to HeatSync Labs WiFi...");
+  } else {
+    connectSSID = ssid;
+    connectPassword = password;
+    Serial.println("Connecting to configured WiFi...");
+  }
+
+  WiFi.begin(connectSSID, connectPassword);
+  int attempts = 0;
+  while (WiFi.status() != WL_CONNECTED && attempts < 20) {
     delay(500);
     Serial.print(".");
+    attempts++;
   }
-  Serial.println("\nWiFi connected.");
-  printWifiStatus();
+
+  // If HSL WiFi failed and we tried it, fall back to configured WiFi
+  if (WiFi.status() != WL_CONNECTED && hslFound) {
+    Serial.println("\nHSL WiFi failed, trying configured WiFi...");
+    WiFi.begin(ssid, password);
+    attempts = 0;
+    while (WiFi.status() != WL_CONNECTED && attempts < 20) {
+      delay(500);
+      Serial.print(".");
+      attempts++;
+    }
+  }
+
+  if (WiFi.status() == WL_CONNECTED) {
+    Serial.println("\nWiFi connected.");
+    printWifiStatus();
+  } else {
+    Serial.println("\nFailed to connect to WiFi!");
+    M5.Lcd.fillScreen(BLACK);
+    M5.Lcd.setCursor(0, 20);
+    M5.Lcd.setTextColor(RED);
+    M5.Lcd.println("WiFi Failed!");
+    while(true) { delay(1000); } // Halt
+  }
 
   // Show connected status
   M5.Lcd.fillScreen(BLACK);
